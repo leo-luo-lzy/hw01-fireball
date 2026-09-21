@@ -2,10 +2,22 @@
 
 **Name:** Zhiyao Luo  
 **PennKey:** leoluozy  
-**Live demo**:  
+**Live demo**: https://leo-luo-lzy.github.io/hw01-fireball   
 
 ### Final Result
+![](Result/1.png)
+*Default Fireball*
 
+![](Result/2.png)
+*Fireball with stronger surface details*
+
+![](Result/3.png)
+*Fireball with a longer tail*
+
+![](Result/4.png)
+*Fireball with a shorter tail*
+
+In this assignment, I created an animated fireball by deforming an icosphere in the vertex shader. I combined low-frequency sinusoidal displacement with higher-frequency 3D Perlin FBM to create the turbulent surface, and added a directional tail to give it a meteor-like shape. The fragment shader uses the tail position and surface noise to generate a red, orange, yellow, and white color gradient. Both shaders use a `u_Time` uniform to animate the displacement and heat value. I also added a procedural celestial background and GUI controls for noise strength, tail length, animation speed, noise octaves, along with a `Reset` button to restore to defaults. I used toolbox functions including `sin()`, `smoothstep()`, `mix()`, `smootherstep` and `step()`.
 
 # HW 1: WebGL Fireball
 
