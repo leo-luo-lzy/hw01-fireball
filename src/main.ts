@@ -10,12 +10,25 @@ import ShaderProgram, {Shader} from './rendering/gl/ShaderProgram';
 
 import lambertVertSource from './shaders/lambert-vert.glsl?raw';
 import lambertFragSource from './shaders/lambert-frag.glsl?raw';
+import backgroundVertSource from './shaders/background-vert.glsl?raw';
+import backgroundFragSource from './shaders/background-frag.glsl?raw';
 
 // Define an object with application parameters and button callbacks
 // This will be referred to by dat.GUI's functions that add GUI elements.
+const defaultParams = {
+    tesselations: 5,
+    noiseStrength: 0.2,
+    tailLength: 1.2,
+    animationSpeed: 1.0,
+    octaves: 6,
+  };
 const controls = {
-  tesselations: 5,
+  ...defaultParams,
+  // tesselations: 5,
   'Load Scene': loadScene, // A function pointer, essentially
+  'Reset': () =>{
+    Object.assign(controls, defaultParams);
+  },
 };
 
 let icosphere: Icosphere;
@@ -40,8 +53,13 @@ function main() {
 
   // Add controls to the gui
   const gui = new DAT.GUI();
-  gui.add(controls, 'tesselations', 0, 8).step(1);
+  gui.add(controls, 'tesselations', 0, 8).step(1).listen();
+  gui.add(controls, 'noiseStrength', 0.0, 1.0).step(0.01).listen();
+  gui.add(controls, 'tailLength', 0.0, 5.0).step(0.01).listen();
+  gui.add(controls, 'animationSpeed', 0.0, 20.0).step(0.01).listen();
+  gui.add(controls, 'octaves', 1, 12).step(1).listen();
   gui.add(controls, 'Load Scene');
+  gui.add(controls, 'Reset');
 
   // get canvas and webgl context
   const canvas = <HTMLCanvasElement> document.getElementById('canvas');
@@ -67,8 +85,20 @@ function main() {
     new Shader(gl.FRAGMENT_SHADER, lambertFragSource),
   ]);
 
+  const background = new ShaderProgram([
+    new Shader(gl.VERTEX_SHADER, backgroundVertSource),
+    new Shader(gl.FRAGMENT_SHADER, backgroundFragSource),
+  ]);
+
+  let previousTime = performance.now();
+  let animationTime = 0.0;
+
   // This function will be called every frame
   function tick() {
+    const tnow = performance.now();
+    const deltaSeconds = (tnow - previousTime) / 1000.0;
+    previousTime = tnow;
+    animationTime += deltaSeconds*controls.animationSpeed;
     camera.update();
     stats.begin();
     gl.viewport(0, 0, window.innerWidth, window.innerHeight);
@@ -79,6 +109,16 @@ function main() {
       icosphere = new Icosphere(vec3.fromValues(0, 0, 0), 1, prevTesselations);
       icosphere.create();
     }
+
+    gl.disable(gl.DEPTH_TEST);
+    gl.depthMask(false);
+    background.draw(square);
+
+
+    gl.depthMask(true);
+    gl.enable(gl.DEPTH_TEST);
+    lambert.setTime(animationTime);
+    lambert.setFireballParameters(controls.noiseStrength, controls.tailLength, controls.octaves);
     renderer.render(camera, lambert, [
       icosphere,
       // square,

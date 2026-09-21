@@ -29,6 +29,10 @@ class ShaderProgram {
   unifModelInvTr: WebGLUniformLocation;
   unifViewProj: WebGLUniformLocation;
   unifColor: WebGLUniformLocation;
+  unifTime: WebGLUniformLocation | null;
+  unifNoiseStrength: WebGLUniformLocation | null;
+  unifTailLength: WebGLUniformLocation | null;
+  unifOctaves: WebGLUniformLocation | null;
 
   constructor(shaders: Array<Shader>) {
     this.prog = gl.createProgram();
@@ -48,6 +52,10 @@ class ShaderProgram {
     this.unifModelInvTr = gl.getUniformLocation(this.prog, "u_ModelInvTr");
     this.unifViewProj   = gl.getUniformLocation(this.prog, "u_ViewProj");
     this.unifColor      = gl.getUniformLocation(this.prog, "u_Color");
+    this.unifTime= gl.getUniformLocation(this.prog, "u_Time");
+    this.unifNoiseStrength= gl.getUniformLocation(this.prog, "u_NoiseStrength");
+    this.unifTailLength= gl.getUniformLocation(this.prog, "u_TailLength");
+    this.unifOctaves = gl.getUniformLocation(this.prog, 'u_Octaves');
   }
 
   use() {
@@ -85,6 +93,31 @@ class ShaderProgram {
     }
   }
 
+  setTime(time: number) {
+    this.use();
+    if (this.unifTime !== null) {
+      gl.uniform1f(this.unifTime, time);
+    }
+  }
+
+  setFireballParameters(noiseStrength: number, tailLength: number, octaves: number) {
+    this.use();
+
+    if (this.unifNoiseStrength !== null) {
+      gl.uniform1f(this.unifNoiseStrength, noiseStrength);
+    }
+
+    if (this.unifTailLength !== null) {
+      gl.uniform1f(this.unifTailLength, tailLength);
+    }
+
+    if (this.unifOctaves !== null) {
+      gl.uniform1i(this.unifOctaves, octaves);
+    }
+  }
+
+
+
   draw(d: Drawable) {
     this.use();
 
@@ -104,6 +137,8 @@ class ShaderProgram {
     if (this.attrPos != -1) gl.disableVertexAttribArray(this.attrPos);
     if (this.attrNor != -1) gl.disableVertexAttribArray(this.attrNor);
   }
+
+
 };
 
 export default ShaderProgram;
